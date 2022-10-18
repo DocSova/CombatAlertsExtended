@@ -1,1 +1,30 @@
-This ESO addon is extension for Code Combat Alerts. Added additional hints for Ascending tides DLC dungeons and it will be more in the future for different dungeons.
+This addon is extension for Code Combat Alerts. Added additional hints for Ascending tides DLC dungeons (HM modes mostly) and it will be more in the future for different dungeons.
+
+Addon track some achievements. If you ruin them, it will write in chat about it.
+You can disable or enable every option in addon settings menu.
+
+Reuqirements:
+- LibCombatAlerts
+- CombatAlerts
+- LibAddonMenu-2.0
+
+Optional:
+- OdySupportIcons
+
+Coral Aerie:
+- Added cast display for Sarydil's "Blast Powder" ability
+- Added cast timer display for Varallion's "Tether" HM ability
+- Added timer between Varallion's "Mental Wound" ability casts
+
+Shipwright's Regret:
+- Added cast warning for skeleton's "Flame" ability
+- Added hint with recommended group stack for Foreman Bradiggan's "Soul bomb" HM ability
+
+Scalecaller Peak:
+- Added tracking of "Pustulent Problems" achievement
+
+Bloodroot Forge:
+- Added tracking of "Cooling Your Heels" achievement
+
+DreadSail Reef:
+- Added 3D-markers for the places where you can find hidden runestones (requires OdySupportIcons)
