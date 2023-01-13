@@ -8,10 +8,13 @@ local base_CombatAlertsStopListenting = CombatAlerts.StopListening
 
 CombatAlerts.at = {}
 CombatAlerts.bloodforge = {}
+CombatAlerts.scalecaller = {}
+CombatAlerts.moonhunter = {}
 CombatAlerts.scalecaller.ratAchEnabled = false
 CombatAlerts.scalecaller.isRatAchFailed = false
 CombatAlerts.bloodforge.nirnAchEnabled = false
 CombatAlerts.bloodforge.isAchFailed = false
+CombatAlerts.moonhunter.isShortLeashFailed = false
 
 if CombatAlertsExtended == nil then CombatAlertsExtended = {} end
 
@@ -20,7 +23,8 @@ CombatAlertsExtended.savedVariablesDefault = {
 		CoralAerie = {
 			MentalWound = true,
 			BlastPowder = true,
-			Tether = true
+			Tether = true,
+			HAVarallion = true
 		},
 		ShipwrightsRegret = {
 			Flame = true,
@@ -29,12 +33,15 @@ CombatAlertsExtended.savedVariablesDefault = {
 		Others = {
 			PustulentProblems = true,
 			CoolingYourHeels = true,
-			DSRRunestones = true
+			DSRRunestones = true,
+			MHKShortLeash = true,
+			ASPositions = true
 		}
 	}
 }
 
-CombatAlertsExtended.icons = {}
+CombatAlertsExtended.stormIsActive = false
+CombatAlertsExtended.TetherID = -1
 CombatAlertsExtended.langs = {}
 CombatAlertsExtended.selectedLang = {}
 CombatAlertsExtended.langs.ru = {
@@ -47,6 +54,8 @@ CombatAlertsExtended.langs.ru = {
 	ADDONMENU_CORALAERIE_BLASTPOWDER_TOOLTIP = "Переключить отображение умения 'Blast Powder'",
 	ADDONMENU_CORALAERIE_TETHER = "Связь",
 	ADDONMENU_CORALAERIE_TETHER_TOOLTIP = "Переключить отображение таймера умения 'Связь'",
+	ADDONMENU_CORALAERIE_HA_VARRALION = "'Уничтожение' Вараллиона",
+	ADDONMENU_CORALAERIE_HA_VARRALION_TOOLTIP = "Переключить отображение HA атаки Вараллиона, когда он ее использует против игрока, не являющимся танком",
 	ADDONMENU_SHIPWRIGHTSREGRET_FLAME = "Пламя",
 	ADDONMENU_SHIPWRIGHTSREGRET_FLAME_TOOLTIP = "Переключить отображение умения склетов 'Пламя'",
 	ADDONMENU_SHIPWRIGHTSREGRET_SOULBOMB = "Мина душ",
@@ -56,7 +65,11 @@ CombatAlertsExtended.langs.ru = {
 	ADDONMENU_OTHERS_COOLINGYOURHEELS = "Достижение 'Ноги в холоде'",
 	ADDONMENU_OTHERS_COOLINGYOURHEELS_TOOLTIP = "Переключить отслеживание выполения достижения 'Ноги в холоде' Кузницы кровавого корня",
 	ADDONMENU_OTHERS_DSRRUNESTONES = "Скрытые руны DSR",
-	ADDONMENU_OTHERS_DSRRUNESTONES_TOOLTIP = "Переключить отображение 3д-меток в триале DSR, где может быть найдена руна (требуется OdySupportIcons)"
+	ADDONMENU_OTHERS_DSRRUNESTONES_TOOLTIP = "Переключить отображение 3д-меток в триале DSR, где может быть найдена руна (требуется OdySupportIcons)",
+	ADDONMENU_OTHERS_MHKSHORTLEASH = "Достижение 'На коротком поводке'",
+	ADDONMENU_OTHERS_MHKSHORTLEASH_TOOLTIP = "Переключить отслеживание выполения достижения 'На коротком поводке' Крепости лунного охотника",
+	ADDONMENU_OTHERS_ASSHOWPOS = "Отображение позиций в AS",
+	ADDONMENU_OTHERS_ASSHOWPOS_TOOLTIP = "Отображение позиций ДД и кайта в AS на Олмсе (требуется OdySupportIcons). При переключении требуется перезагрузка интерфейса"
 }
 CombatAlertsExtended.langs.en = {
 	ADDONMENU_CORALAERIE_HEADER = "Coral Aerie",
@@ -68,6 +81,8 @@ CombatAlertsExtended.langs.en = {
 	ADDONMENU_CORALAERIE_BLASTPOWDER_TOOLTIP = "Switch cast display for Sarydil's 'Blast Powder' ability",
 	ADDONMENU_CORALAERIE_TETHER = "Tether",
 	ADDONMENU_CORALAERIE_TETHER_TOOLTIP = "Switch cast timer display for Varallion's 'Tether' HM ability",
+	ADDONMENU_CORALAERIE_HA_VARRALION = "Varallion's Heavy Attack",
+	ADDONMENU_CORALAERIE_HA_VARRALION_TOOLTIP = "Switch cast display of Varralion's heavy attack, when he casts it not on a tank",
 	ADDONMENU_SHIPWRIGHTSREGRET_FLAME = "Flame",
 	ADDONMENU_SHIPWRIGHTSREGRET_FLAME_TOOLTIP = "Switch cast warning for skeleton's 'Flame' ability",
 	ADDONMENU_SHIPWRIGHTSREGRET_SOULBOMB = "Soul Bomb",
@@ -77,8 +92,19 @@ CombatAlertsExtended.langs.en = {
 	ADDONMENU_OTHERS_COOLINGYOURHEELS = "'Cooling Your Heels' achievement",
 	ADDONMENU_OTHERS_COOLINGYOURHEELS_TOOLTIP = "Switch tracking of 'Cooling Your Heels' achievement",
 	ADDONMENU_OTHERS_DSRRUNESTONES = "Hidden runes DSR",
-	ADDONMENU_OTHERS_DSRRUNESTONES_TOOLTIP = "Switch 3D-markers in the DSR trial, where you can find runestones (requires OdySupportIcons)"
+	ADDONMENU_OTHERS_DSRRUNESTONES_TOOLTIP = "Switch 3D-markers in the DSR trial, where you can find runestones (requires OdySupportIcons)",
+	ADDONMENU_OTHERS_MHKSHORTLEASH = "'On a Short Leash' achievement",
+	ADDONMENU_OTHERS_MHKSHORTLEASH_TOOLTIP = "Switch tracking of 'On a Short Leash' achievement",
+	ADDONMENU_OTHERS_ASSHOWPOS = "Show positions in AS",
+	ADDONMENU_OTHERS_ASSHOWPOS_TOOLTIP = "Switch DD positions and their kite in AS (requires OdySupportIcons). This option requires reload UI"
 }
+
+function CombatAlertsExtended.Clear3DMarkers(array)
+	for i in pairs(array) do
+        OSI.DiscardPositionIcon(array[i])
+    end
+	array = {}
+end
 
 function CombatAlerts.StartListening()
 	local db = CombatAlertsExtended.savedVariables.Settings
@@ -94,10 +120,48 @@ function CombatAlerts.StopListening()
 	if ((CombatAlerts.zoneId == 1344) and (OSI ~= nil) and (db.Others.DSRRunestones)) then
 		CombatAlertsExtended.DreadSailRunestones(true)
 	end
+	CombatAlerts.moonhunter.isShortLeashFailed = false
+	
+	if (CombatAlertsExtended.TetherID > 0) then
+		CombatAlerts.CastAlertsStop(CombatAlertsExtended.TetherID)
+	end
 	
 	base_CombatAlertsStopListenting()
 end
 
+function CombatAlertsExtended.ASPlayerPositions(mode)
+	local playerPositions = {
+		["ddpos1"] = {x = 97017, y = 61450, z = 100718, texture = "odysupporticons/icons/squares/squaretwo_red_one.dds", size = 100, color = {1,1,1,1}},
+		["ddpos2"] = {x = 97512, y = 61450, z = 100251, texture = "odysupporticons/icons/squares/squaretwo_red_two.dds", size = 100, color = {1,1,1,1}},
+		["ddpos3"] = {x = 98061, y = 61450, z = 99869, texture = "odysupporticons/icons/squares/squaretwo_red_three.dds", size = 100, color = {1,1,1,1}},
+		["ddpos4"] = {x = 98581, y = 61450, z = 99669, texture = "odysupporticons/icons/squares/squaretwo_red_four.dds", size = 100, color = {1,1,1,1}},
+		["ddpos5"] = {x = 99084, y = 61450, z = 99648, texture = "odysupporticons/icons/squares/squaretwo_red_five.dds", size = 100, color = {1,1,1,1}},
+		["ddpos6"] = {x = 99547, y = 61450, z = 99714, texture = "odysupporticons/icons/squares/squaretwo_red_six.dds", size = 100, color = {1,1,1,1}},
+		["ddpos7"] = {x = 100146, y = 61450, z = 100134, texture = "odysupporticons/icons/squares/squaretwo_red_seven.dds", size = 100, color = {1,1,1,1}},
+		["ddpos8"] = {x = 100730, y = 61450, z = 100697, texture = "odysupporticons/icons/squares/squaretwo_red_eight.dds", size = 100, color = {1,1,1,1}}
+	}
+	
+	if (mode) then
+		local function enableIcon(name)
+			local iconData = playerPositions[name]
+			local icon = OSI.CreatePositionIcon(iconData.x, iconData.y, iconData.z, iconData.texture, iconData.size, iconData.color)
+			CombatAlertsExtended.icons[name] = icon
+		end
+		
+		enableIcon("ddpos1")
+		enableIcon("ddpos2")
+		enableIcon("ddpos3")
+		enableIcon("ddpos4")
+		enableIcon("ddpos5")
+		enableIcon("ddpos6")
+		enableIcon("ddpos7")
+		enableIcon("ddpos8")
+	else
+		if (CombatAlertsExtended.icons["ddpos1"] ~= nil) then
+			CombatAlertsExtended.Clear3DMarkers(CombatAlertsExtended.icons)
+		end
+	end
+end
 
 function CombatAlertsExtended.DreadSailRunestones(mode)
 	local runestonesPositions = {
@@ -134,17 +198,7 @@ function CombatAlertsExtended.DreadSailRunestones(mode)
 		end
 	else
 		if (CombatAlertsExtended.icons["rune1"] ~= nil) then
-			OSI.DiscardPositionIcon(CombatAlertsExtended.icons["rune1"])
-			OSI.DiscardPositionIcon(CombatAlertsExtended.icons["rune2"])
-			OSI.DiscardPositionIcon(CombatAlertsExtended.icons["rune3"])
-			OSI.DiscardPositionIcon(CombatAlertsExtended.icons["rune4"])
-			OSI.DiscardPositionIcon(CombatAlertsExtended.icons["rune5"])
-			OSI.DiscardPositionIcon(CombatAlertsExtended.icons["rune6"])
-			OSI.DiscardPositionIcon(CombatAlertsExtended.icons["rune7"])
-			OSI.DiscardPositionIcon(CombatAlertsExtended.icons["rune8"])
-			OSI.DiscardPositionIcon(CombatAlertsExtended.icons["rune9"])
-			OSI.DiscardPositionIcon(CombatAlertsExtended.icons["rune10"])
-			CombatAlertsExtended.icons = {}
+			CombatAlertsExtended.Clear3DMarkers(CombatAlertsExtended.icons)
 		end
 	end
 end
@@ -209,6 +263,14 @@ function CombatAlertsExtended.LoadAddonMenu()
 			setFunc = function(value) db.CoralAerie.Tether = value end,
 		},
 		{
+			type = "checkbox",
+			name = lang.ADDONMENU_CORALAERIE_HA_VARRALION,
+			tooltip = lang.ADDONMENU_CORALAERIE_HA_VARRALION_TOOLTIP,
+			default = true,
+			getFunc = function() return db.CoralAerie.HAVarallion end,
+			setFunc = function(value) db.CoralAerie.HAVarallion = value end,
+		},
+		{
 			type = "header",
 			name = lang.ADDONMENU_SHIPWRIGHTSREGRET_HEADER
 		},
@@ -255,6 +317,22 @@ function CombatAlertsExtended.LoadAddonMenu()
 			default = true,
 			getFunc = function() return db.Others.DSRRunestones end,
 			setFunc = function(value) db.Others.DSRRunestones = value end,
+		},
+		{
+			type = "checkbox",
+			name = lang.ADDONMENU_OTHERS_MHKSHORTLEASH,
+			tooltip = lang.ADDONMENU_OTHERS_MHKSHORTLEASH_TOOLTIP,
+			default = true,
+			getFunc = function() return db.Others.MHKShortLeash end,
+			setFunc = function(value) db.Others.MHKShortLeash = value end,
+		},
+		{
+			type = "checkbox",
+			name = lang.ADDONMENU_OTHERS_ASSHOWPOS,
+			tooltip = lang.ADDONMENU_OTHERS_ASSHOWPOS_TOOLTIP,
+			default = true,
+			getFunc = function() return db.Others.ASPositions end,
+			setFunc = function(value) db.Others.ASPositions = value end,
 		}
 	}
 
@@ -266,9 +344,22 @@ function CombatAlertsExtended.LoadAddonMenu()
 end
 
 function CombatAlerts.PlayerActivated( eventCode, initial )
+	CombatAlertsExtended.icons = {}
+	CombatAlertsExtended.KiteASicons = {}
+	
+	CombatAlertsExtended.Clear3DMarkers(CombatAlertsExtended.icons)
+	CombatAlertsExtended.Clear3DMarkers(CombatAlertsExtended.KiteASicons)
 	local db = CombatAlertsExtended.savedVariables.Settings
 	CombatAlerts.zoneId = GetZoneId(GetUnitZoneIndex("player"))
 	
+	if (CombatAlerts.zoneId == 1000 and (db.Others.ASPositions)) then
+		if (OSI ~= nil) then
+			
+			CombatAlertsExtended.ASPlayerPositions(true)
+		end
+	else
+		CombatAlertsExtended.ASPlayerPositions(false)
+	end
 	
 	if (CombatAlerts.zoneId == 1344 and (db.Others.DSRRunestones)) then
 		if (OSI ~= nil) then
@@ -303,6 +394,7 @@ function CombatAlerts.PlayerActivated( eventCode, initial )
 		CombatAlerts.scalecaller.isRatAchFailed = false
 		CombatAlerts.bloodforge.nirnAchEnabled = false
 		CombatAlerts.bloodforge.isAchFailed = false
+		CombatAlerts.moonhunter.isShortLeashFailed = false
 	end
 	base_CombatAlertsPlayerActivated(eventCode, initial)
 end
@@ -312,8 +404,8 @@ function CombatAlerts.CombatEvent( eventCode, result, isError, abilityName, abil
 	local db = CombatAlertsExtended.savedVariables.Settings
 	
 	-- some test
-	if (abilityId == 118852) then
-		-- CHAT_ROUTER:AddSystemMessage(string.format("event %d result %d abilityName %s sourceName %s sourceType %d hitValue %d powerType %d damageType %d sourceUnitId %d targetUnitId %d abilityId %d targetName %s targetType %s",eventCode, result, abilityName, sourceName, sourceType, hitValue, powerType, damageType, sourceUnitId, targetUnitId, abilityId, targetName, targetType))
+	if (result == ACTION_RESULT_BEGIN) then
+		--CHAT_ROUTER:AddSystemMessage(string.format("event %d result %d abilityName %s sourceName %s sourceType %d hitValue %d powerType %d damageType %d sourceUnitId %d targetUnitId %d abilityId %d targetName %s targetType %s",eventCode, result, abilityName, sourceName, sourceType, hitValue, powerType, damageType, sourceUnitId, targetUnitId, abilityId, targetName, targetType))
 	end
 	
 	-- Ascending Tide
@@ -380,11 +472,62 @@ function CombatAlerts.CombatEvent( eventCode, result, isError, abilityName, abil
 			CombatAlerts.tide.link1 = targetName
 		else
 			CombatAlerts.Alert(GetFormattedAbilityName(abilityId), string.format("%s / %s", CombatAlerts.tide.link1, targetName), 0xCC3399FF, SOUNDS.CHAMPION_POINTS_COMMITTED, 2000)
-			CombatAlerts.CastAlertsStart(CombatAlertsData.sunspire.meteorIcon, string.format("%s / %s", CombatAlerts.tide.link1, targetName), 28000, nil, nil, { 28000, "", 1, 0, 1, 0.5, nil })
+			CombatAlertsExtended.TetherID = CombatAlerts.CastAlertsStart(CombatAlertsData.sunspire.meteorIcon, string.format("%s / %s", CombatAlerts.tide.link1, targetName), 28000, nil, nil, { 28000, "", 1, 0, 1, 0.5, nil })
 			CombatAlerts.tide.link1 = ""
 		end
 		overwritten = true
-		
+	elseif (result == ACTION_RESULT_BEGIN and abilityId == 158778 and db.CoralAerie.HAVarallion) then
+		if (CombatAlerts.units[targetUnitId] ~= nil) then
+			local targetTag = CombatAlerts.units[targetUnitId].tag
+
+			if (GetGroupMemberSelectedRole(targetTag) ~= LFG_ROLE_TANK) then
+				zo_callLater(function() CombatAlerts.Alert(nil, "", 0xFFD700FF, SOUNDS.DUEL_START, 1500) end, 500)
+				CombatAlerts.AlertCast(abilityId, sourceName, hitValue, { 0, 0, false, { 1, 0, 0.6, 0.8 } })
+				overwritten = true
+			end
+		end
+	--Moon Hunter Keep
+	elseif (result == ACTION_RESULT_DAMAGE and abilityId == 104412 and db.Others.MHKShortLeash and not CombatAlerts.moonhunter.isShortLeashFailed) then
+		CombatAlerts.AlertChat(string.format("Failed |H1:achievement:2300:0:0|h|h"))
+		CombatAlerts.moonhunter.isShortLeashFailed = true
+	--AS
+	--Start AS Kite
+	elseif (result == ACTION_RESULT_BEGIN and abilityId == 98535 and (OSI ~= nil) and db.Others.ASPositions and not CombatAlertsExtended.stormIsActive) then
+		CombatAlertsExtended.stormIsActive = true
+		local DDPositions = {
+			{97017, 100718, 180 + 20, 2200},
+			{97512, 100251, 180 + 40, 2200},
+			{98061, 99869, 180 + 60, 2200},
+			{98581, 99669, 180 + 80, 2200},
+			{99084, 99648, 180 + 100, 2200},
+			{99547, 99714, 180 + 110, 2200},
+			{100146, 100134, 180 + 130, 2200},
+			{100730, 100697, 180 + 140, 2200}
+		}
+		local function enableIcon(x, z, dd, i)
+			local icon = OSI.CreatePositionIcon(x, 61450, z, "odysupporticons/icons/squares/squaretwo_yellow.dds", 50, {1,1,1})
+			CombatAlertsExtended.KiteASicons[string.format("ddkitepos_%d_%d", dd, i)] = icon
+		end
+		local function getSegmentPoints(x, y, angle, length)
+			local segmentPoints = {}
+			for i = 1, 5 do
+				local x_coord = x + (length / 5) * (i - 1) * math.cos(math.rad(angle))
+				local y_coord = y + (length / 5) * (i - 1) * math.sin(math.rad(angle))
+				segmentPoints[i] = {x = x_coord, y = y_coord}
+			end
+			return segmentPoints
+		end
+
+		for i = 1, 8 do
+			local info = DDPositions[i]
+			local segments = getSegmentPoints(info[1], info[2], info[3], info[4])
+			for k = 2, 5 do
+				local segment = segments[k]
+				enableIcon(segment.x, segment.y, i, k)
+			end
+		end
+
+		zo_callLater(function() CombatAlertsExtended.Clear3DMarkers(CombatAlertsExtended.KiteASicons) CombatAlertsExtended.stormIsActive = false end, 6000)
 	--ScaleCaller Peak
 	elseif (result == ACTION_RESULT_DAMAGE and abilityId == 100285 and CombatAlerts.scalecaller.ratAchEnabled and not CombatAlerts.scalecaller.isRatAchFailed) then
 		if (CombatAlerts.units[targetUnitId]) then
