@@ -15,6 +15,7 @@ Coral Aerie:
 - Added cast display for Sarydil's "Blast Powder" ability
 - Added cast timer display for Varallion's "Tether" HM ability
 - Added timer between Varallion's "Mental Wound" ability casts
+- Added warning cast for Varallion's heavy attack, if his target is not a tank
 
 Shipwright's Regret:
 - Added cast warning for skeleton's "Flame" ability
@@ -28,3 +29,9 @@ Bloodroot Forge:
 
 DreadSail Reef:
 - Added 3D-markers for the places where you can find hidden runestones (requires OdySupportIcons)
+
+Asylum:
+- Added 3D-markers for DD positions and their kite in AS (requires OdySupportIcons)
+
+Moonhunter Keep:
+- Added warning tracking of "On a Short Leash" achievement
