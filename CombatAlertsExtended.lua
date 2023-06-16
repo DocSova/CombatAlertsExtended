@@ -8,10 +8,10 @@ local base_CombatAlertsStopListenting = CombatAlerts.StopListening
 
 CombatAlerts.at = {}
 CombatAlerts.bloodforge = {}
-CombatAlerts.scalecaller = {}
+CombatAlerts.sc = {}
 CombatAlerts.moonhunter = {}
-CombatAlerts.scalecaller.ratAchEnabled = false
-CombatAlerts.scalecaller.isRatAchFailed = false
+CombatAlerts.sc.ratAchEnabled = false
+CombatAlerts.sc.isRatAchFailed = false
 CombatAlerts.bloodforge.nirnAchEnabled = false
 CombatAlerts.bloodforge.isAchFailed = false
 CombatAlerts.moonhunter.isShortLeashFailed = false
@@ -35,7 +35,8 @@ CombatAlertsExtended.savedVariablesDefault = {
 			CoolingYourHeels = true,
 			DSRRunestones = true,
 			MHKShortLeash = true,
-			ASPositions = true
+			ASPositions = true,
+			NymicSecrets = true
 		}
 	}
 }
@@ -45,6 +46,7 @@ CombatAlertsExtended.TetherID = -1
 CombatAlertsExtended.langs = {}
 CombatAlertsExtended.selectedLang = {}
 CombatAlertsExtended.langs.ru = {
+	ADDONMENU_DONATE_TOOLTIP = "Если мой аддон помог вам в чем-либо, то буду признателен любой поддержке (только EU сервер)",
 	ADDONMENU_CORALAERIE_HEADER = "Коралловое гнездо",
 	ADDONMENU_SHIPWRIGHTSREGRET_HEADER = "Горе корабела",
 	ADDONMENU_OTHERS_HEADER = "Прочее",
@@ -69,9 +71,12 @@ CombatAlertsExtended.langs.ru = {
 	ADDONMENU_OTHERS_MHKSHORTLEASH = "Достижение 'На коротком поводке'",
 	ADDONMENU_OTHERS_MHKSHORTLEASH_TOOLTIP = "Переключить отслеживание выполения достижения 'На коротком поводке' Крепости лунного охотника",
 	ADDONMENU_OTHERS_ASSHOWPOS = "Отображение позиций в AS",
-	ADDONMENU_OTHERS_ASSHOWPOS_TOOLTIP = "Отображение позиций ДД и кайта в AS на Олмсе (требуется OdySupportIcons). При переключении требуется перезагрузка интерфейса"
+	ADDONMENU_OTHERS_ASSHOWPOS_TOOLTIP = "Отображение позиций ДД и кайта в AS на Олмсе (требуется OdySupportIcons). При переключении требуется перезагрузка интерфейса",
+	ADDONMENU_OTHERS_NYMIC_SECRETS = "Отображение головоломок в оплоте Нимик",
+	ADDONMENU_OTHERS_NYMIC_SECRETS_TOOLTIP = "Отображение подсказок для головомок в оплоте Нимик (требуется odySupportIcons). При переключении требуется перезагрузка интерфейса"
 }
 CombatAlertsExtended.langs.en = {
+	ADDONMENU_DONATE_TOOLTIP = "If my addon helped you in anything, then I will be grateful for any support (EU server only)",
 	ADDONMENU_CORALAERIE_HEADER = "Coral Aerie",
 	ADDONMENU_SHIPWRIGHTSREGRET_HEADER = "Shipwright's Regret",
 	ADDONMENU_OTHERS_HEADER = "Others",
@@ -96,7 +101,9 @@ CombatAlertsExtended.langs.en = {
 	ADDONMENU_OTHERS_MHKSHORTLEASH = "'On a Short Leash' achievement",
 	ADDONMENU_OTHERS_MHKSHORTLEASH_TOOLTIP = "Switch tracking of 'On a Short Leash' achievement",
 	ADDONMENU_OTHERS_ASSHOWPOS = "Show positions in AS",
-	ADDONMENU_OTHERS_ASSHOWPOS_TOOLTIP = "Switch DD positions and their kite in AS (requires OdySupportIcons). This option requires reload UI"
+	ADDONMENU_OTHERS_ASSHOWPOS_TOOLTIP = "Switch DD positions and their kite in AS (requires OdySupportIcons). This option requires reload UI",
+	ADDONMENU_OTHERS_NYMIC_SECRETS = "Show secrets in Nymic bastion",
+	ADDONMENU_OTHERS_NYMIC_SECRETS_TOOLTIP = "Show additional hints for Nymic's secrects (requires OdySupportIcons). This option requires reload UI"
 }
 
 function CombatAlertsExtended.Clear3DMarkers(array)
@@ -163,24 +170,92 @@ function CombatAlertsExtended.ASPlayerPositions(mode)
 	end
 end
 
+function CombatAlertsExtended.NymicPositions(mode)
+	local redPositions = {
+		["Rhint1"] = {x = 54164, y = 54700, z = 86008, texture = "CombatAlertsExtended/icons/bastion_1.dds", color = {1,1,1,1}},
+		["Rhint2"] = {x = 54483, y = 54700, z = 86427, texture = "CombatAlertsExtended/icons/bastion_2.dds", color = {1,1,1,1}},
+		["Rhint3"] = {x = 54751, y = 54700, z = 86878, texture = "CombatAlertsExtended/icons/bastion_3.dds", color = {1,1,1,1}},
+		["Rhint4"] = {x = 54932, y = 54700, z = 87344, texture = "CombatAlertsExtended/icons/bastion_4.dds", color = {1,1,1,1}}
+	}
+
+	local bluePositions = {
+		["Bstatue1"] = {x = 61346, y = 55152, z = 60106, texture = "odysupporticons/icons/arrow.dds", color = {0.5490,0.6627,0.995,1}},
+		["Bstatue2"] = {x = 72239, y = 55391, z = 42506, texture = "odysupporticons/icons/arrow.dds", color = {0.5490,0.6627,0.995,1}},
+		["Bstatue3"] = {x = 86345, y = 56259, z = 54010, texture = "odysupporticons/icons/arrow.dds", color = {0.5490,0.6627,0.995,1}},
+		["Bstatue4"] = {x = 63861, y = 55241, z = 48887, texture = "odysupporticons/icons/arrow.dds", color = {0.5490,0.6627,0.995,1}},
+		["BHunger1"] = {x = 83495, y = 55257, z = 38870, texture = "CombatAlertsExtended/icons/hunger.dds", color = {1,1,1,1}},
+		["BHunger2"] = {x = 78026, y = 54074, z = 47565, texture = "CombatAlertsExtended/icons/hunger.dds", color = {1,1,1,1}},
+		["BHunger3"] = {x = 93574, y = 55107, z = 59082, texture = "CombatAlertsExtended/icons/hunger.dds", color = {1,1,1,1}},
+		["BHunger4"] = {x = 60652, y = 55134, z = 61004, texture = "CombatAlertsExtended/icons/hunger.dds", color = {1,1,1,1}}
+	}
+
+	local greenPositions = {
+		["Gred1"] 	= {x = 95369, y = 55262, z = 65477, texture = "odysupporticons/icons/arrow.dds", color = {0.8078,0.1764,0.1764,1}},
+		["Gred2"] 	= {x = 101691, y = 56929, z = 81289, texture = "odysupporticons/icons/arrow.dds", color = {0.8078,0.1764,0.1764,1}},
+		["Gred3"] 	= {x = 76603, y = 55302, z = 95987, texture = "odysupporticons/icons/arrow.dds", color = {0.8078,0.1764,0.1764,1}},
+		["Gred4"] 	= {x = 77517, y = 55282, z = 100020, texture = "odysupporticons/icons/arrow.dds", color = {0.8078,0.1764,0.1764,1}},
+		["Gred5"] 	= {x = 106904, y = 54991, z = 83875, texture = "odysupporticons/icons/arrow.dds", color = {0.8078,0.1764,0.1764,1}},
+		["Gred6"] 	= {x = 93556, y = 54991, z = 74646, texture = "odysupporticons/icons/arrow.dds", color = {0.8078,0.1764,0.1764,1}},
+		["Ggreen1"] = {x = 95533, y = 55258, z = 65109, texture = "odysupporticons/icons/arrow.dds", color = {0.5725,0.8274,0.2078,1}},
+		["Ggreen2"] = {x = 98444, y = 54991, z = 98259, texture = "odysupporticons/icons/arrow.dds", color = {0.5725,0.8274,0.2078,1}},
+		["Ggreen3"] = {x = 90797, y = 53691, z = 91100, texture = "odysupporticons/icons/arrow.dds", color = {0.5725,0.8274,0.2078,1}},
+		["Ggreen4"] = {x = 76930, y = 55292, z = 100099, texture = "odysupporticons/icons/arrow.dds", color = {0.5725,0.8274,0.2078,1}},
+		["Ggreen5"] = {x = 87837, y = 53491, z = 91439, texture = "odysupporticons/icons/arrow.dds", color = {0.5725,0.8274,0.2078,1}},
+		["Ggreen6"] = {x = 97061, y = 56929, z = 78306, texture = "odysupporticons/icons/arrow.dds", color = {0.5725,0.8274,0.2078,1}}
+	}
+
+
+	if (mode) then
+		local function enableIcon(name, markersArray)
+			local iconData = markersArray[name]
+			local icon = OSI.CreatePositionIcon(iconData.x, iconData.y, iconData.z, iconData.texture, 100, iconData.color)
+			CombatAlertsExtended.icons[name] = icon
+		end
+
+		enableIcon("Rhint1", redPositions)
+		enableIcon("Rhint2", redPositions)
+		enableIcon("Rhint3", redPositions)
+		enableIcon("Rhint4", redPositions)
+		enableIcon("Bstatue1", bluePositions)
+		enableIcon("Bstatue2", bluePositions)
+		enableIcon("Bstatue3", bluePositions)
+		enableIcon("Bstatue4", bluePositions)
+		enableIcon("BHunger1", bluePositions)
+		enableIcon("BHunger2", bluePositions)
+		enableIcon("BHunger3", bluePositions)
+		enableIcon("BHunger4", bluePositions)
+		enableIcon("Gred1", greenPositions)
+		enableIcon("Gred2", greenPositions)
+		enableIcon("Gred3", greenPositions)
+		enableIcon("Ggreen1", greenPositions)
+		enableIcon("Ggreen2", greenPositions)
+		enableIcon("Ggreen3", greenPositions)
+
+	else
+		if (CombatAlertsExtended.icons["Rhint1"] ~= nil) then
+			CombatAlertsExtended.Clear3DMarkers(CombatAlertsExtended.icons)
+		end
+	end
+end
+
 function CombatAlertsExtended.DreadSailRunestones(mode)
 	local runestonesPositions = {
-		["rune1"] = {x = 20411, y = 36785, z = 39579, texture = "odysupporticons/icons/arrow.dds", size = 150, color = {1,1,1}},
-		["rune2"] = {x = 12978, y = 37345, z = 29165, texture = "odysupporticons/icons/arrow.dds", size = 150, color = {1,1,1}},
-		["rune3"] = {x = 41489, y = 36788, z = 23992, texture = "odysupporticons/icons/arrow.dds", size = 150, color = {1,1,1}},
-		["rune4"] = {x = 41213, y = 36806, z = 11735, texture = "odysupporticons/icons/arrow.dds", size = 150, color = {1,1,1}},
-		["rune5"] = {x = 46656, y = 36825, z = 30250, texture = "odysupporticons/icons/arrow.dds", size = 150, color = {1,1,1}},
-		["rune6"] = {x = 127720, y = 38008, z = 160150, texture = "odysupporticons/icons/arrow.dds", size = 150, color = {1,1,1}},
-		["rune7"] = {x = 142091, y = 38249, z = 165583, texture = "odysupporticons/icons/arrow.dds", size = 150, color = {1,1,1}},
-		["rune8"] = {x = 146410, y = 38236, z = 177617, texture = "odysupporticons/icons/arrow.dds", size = 150, color = {1,1,1}},
-		["rune9"] = {x = 147747, y = 38229, z = 160142, texture = "odysupporticons/icons/arrow.dds", size = 150, color = {1,1,1}},
-		["rune10"] = {x = 156722, y = 40509, z = 151923, texture = "odysupporticons/icons/arrow.dds", size = 150, color = {1,1,1}}
+		["rune1"] = {x = 20411, y = 36785, z = 39579},
+		["rune2"] = {x = 12978, y = 37345, z = 29165},
+		["rune3"] = {x = 41489, y = 36788, z = 23992},
+		["rune4"] = {x = 41213, y = 36806, z = 11735},
+		["rune5"] = {x = 46656, y = 36825, z = 30250},
+		["rune6"] = {x = 127720, y = 38008, z = 160150},
+		["rune7"] = {x = 142091, y = 38249, z = 165583},
+		["rune8"] = {x = 146410, y = 38236, z = 177617},
+		["rune9"] = {x = 147747, y = 38229, z = 160142},
+		["rune10"] = {x = 156722, y = 40509, z = 151923}
 	}
 	
 	if (mode) then
 		local function enableIcon(name)
 			local iconData = runestonesPositions[name]
-			local icon = OSI.CreatePositionIcon(iconData.x, iconData.y, iconData.z, iconData.texture, iconData.size, iconData.color)
+			local icon = OSI.CreatePositionIcon(iconData.x, iconData.y, iconData.z, "odysupporticons/icons/arrow.dds", 150, {1,1,1})
 			CombatAlertsExtended.icons[name] = icon
 		end
 		
@@ -226,7 +301,7 @@ function CombatAlertsExtended.LoadAddonMenu()
 		type = "panel",
 		name = "Combat Alerts Extended",
 		displayName = "Combat Alerts Extended",
-		author = "DrSova",
+		author = "@DrSova",
 		version = "1.0.2",
 		slashCommand = "/cae",	--(optional) will register a keybind to open to this panel
 		registerForRefresh = true,	--boolean (optional) (will refresh all options controls when a setting is changed and when the panel is shown)
@@ -234,6 +309,22 @@ function CombatAlertsExtended.LoadAddonMenu()
 	}
 	
 	local optionsTable = {
+		{
+			type = "button",
+			name = "Donate",
+			tooltip = lang.ADDONMENU_DONATE_TOOLTIP,
+			func = function()
+				  local function PrefillMail()
+					ZO_MailSendToField:SetText("@DrSova")
+					ZO_MailSendSubjectField:SetText("Combat Alerts Extended")
+					ZO_MailSendBodyField:TakeFocus()
+				  end
+					SCENE_MANAGER:Show('mailSend')
+					zo_callLater(PrefillMail, 250)
+			end,
+			width = "half",
+			warning = "",	
+		},
 		{
 			type = "header",
 			name = lang.ADDONMENU_CORALAERIE_HEADER
@@ -333,6 +424,14 @@ function CombatAlertsExtended.LoadAddonMenu()
 			default = true,
 			getFunc = function() return db.Others.ASPositions end,
 			setFunc = function(value) db.Others.ASPositions = value end,
+		},
+		{
+			type = "checkbox",
+			name = lang.ADDONMENU_OTHERS_NYMIC_SECRETS,
+			tooltip = lang.ADDONMENU_OTHERS_NYMIC_SECRETS_TOOLTIP,
+			default = true,
+			getFunc = function() return db.Others.NymicSecrets end,
+			setFunc = function(value) db.Others.NymicSecrets = value end,
 		}
 	}
 
@@ -349,29 +448,31 @@ function CombatAlerts.PlayerActivated( eventCode, initial )
 	
 	CombatAlertsExtended.Clear3DMarkers(CombatAlertsExtended.icons)
 	CombatAlertsExtended.Clear3DMarkers(CombatAlertsExtended.KiteASicons)
+
 	local db = CombatAlertsExtended.savedVariables.Settings
 	CombatAlerts.zoneId = GetZoneId(GetUnitZoneIndex("player"))
 	
 	if (CombatAlerts.zoneId == 1000 and (db.Others.ASPositions)) then
 		if (OSI ~= nil) then
-			
 			CombatAlertsExtended.ASPlayerPositions(true)
 		end
-	else
-		CombatAlertsExtended.ASPlayerPositions(false)
+	end
+
+	if (CombatAlerts.zoneId == 1420 and (db.Others.NymicSecrets)) then
+		if (OSI ~= nil) then
+			CombatAlertsExtended.NymicPositions(true)
+		end
 	end
 	
 	if (CombatAlerts.zoneId == 1344 and (db.Others.DSRRunestones)) then
 		if (OSI ~= nil) then
 			CombatAlertsExtended.DreadSailRunestones(true)
 		end
-	else
-		CombatAlertsExtended.DreadSailRunestones(false)
 	end
 	
 	if (CombatAlerts.zoneId == 1010 and db.Others.PustulentProblems) then
-		if (not CombatAlerts.scalecaller.ratAchEnabled) then
-			CombatAlerts.scalecaller.ratAchEnabled = true
+		if (not CombatAlerts.sc.ratAchEnabled) then
+			CombatAlerts.sc.ratAchEnabled = true
 			CombatAlerts.AlertChat(LocalizeString("Starting tracking |H1:achievement:1984:0:0|h|h"));
 		end
 	elseif (CombatAlerts.zoneId == 973 and db.Others.CoolingYourHeels) then
@@ -380,7 +481,7 @@ function CombatAlerts.PlayerActivated( eventCode, initial )
 				
 				if (abilityId == 87303 and targetType == COMBAT_UNIT_TYPE_PLAYER) then 
 					CombatAlerts.AlertChat(string.format("Failed |H1:achievement:1816:0:0|h|h"))
-					CombatAlerts.scalecaller.isAchFailed = true
+					CombatAlerts.sc.isAchFailed = true
 					EVENT_MANAGER:UnregisterForEvent("CombatAlertsExtended_Bloodforge", EVENT_COMBAT_EVENT)
 				end
 			end
@@ -390,8 +491,8 @@ function CombatAlerts.PlayerActivated( eventCode, initial )
 			EVENT_MANAGER:RegisterForEvent("CombatAlertsExtended_Bloodforge", EVENT_COMBAT_EVENT, BloodForgeAchievement)
 		end
 	else
-		CombatAlerts.scalecaller.ratAchEnabled = false
-		CombatAlerts.scalecaller.isRatAchFailed = false
+		CombatAlerts.sc.ratAchEnabled = false
+		CombatAlerts.sc.isRatAchFailed = false
 		CombatAlerts.bloodforge.nirnAchEnabled = false
 		CombatAlerts.bloodforge.isAchFailed = false
 		CombatAlerts.moonhunter.isShortLeashFailed = false
@@ -529,13 +630,13 @@ function CombatAlerts.CombatEvent( eventCode, result, isError, abilityName, abil
 
 		zo_callLater(function() CombatAlertsExtended.Clear3DMarkers(CombatAlertsExtended.KiteASicons) CombatAlertsExtended.stormIsActive = false end, 6000)
 	--ScaleCaller Peak
-	elseif (result == ACTION_RESULT_DAMAGE and abilityId == 100285 and CombatAlerts.scalecaller.ratAchEnabled and not CombatAlerts.scalecaller.isRatAchFailed) then
+	elseif (result == ACTION_RESULT_DAMAGE and abilityId == 100285 and CombatAlerts.sc.ratAchEnabled and not CombatAlerts.sc.isRatAchFailed) then
 		if (CombatAlerts.units[targetUnitId]) then
 			targetName = CombatAlerts.units[targetUnitId].name
 		end
 		
 		CombatAlerts.AlertChat(string.format("Failed |H1:achievement:1984:0:0|h|h by %s", targetName))
-		CombatAlerts.scalecaller.isRatAchFailed = true
+		CombatAlerts.sc.isRatAchFailed = true
 	end
 	
 	if (overwritten) then

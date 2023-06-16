@@ -8,8 +8,8 @@
 ## Title: Code's Combat Alerts Extended
 ## Description: Extended display of game mechanics for Code`s Combat Alerts
 ## Author: @DrSova
-## Version: 1.0.3
-## APIVersion: 101033 101034 101035 101036
+## Version: 1.0.5
+## APIVersion: 101038 101039
 ## DependsOn: LibCombatAlerts CombatAlerts LibAddonMenu-2.0
 ## OptionalDependsOn: OdySupportIcons
 ## SavedVariables: CombatAlertsExtended_data
